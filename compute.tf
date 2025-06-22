@@ -16,10 +16,11 @@ data "aws_ami" "amazon_linux" {
 
 # EC2インスタンス
 resource "aws_instance" "my_instance" {
+  count                  = 2
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t2.micro"
   key_name               = var.key_name
-  subnet_id              = aws_subnet.my_subnet.id
+  subnet_id              = aws_subnet.public[count.index].id
   vpc_security_group_ids = [aws_security_group.my_security_group.id]
 
   tags = {

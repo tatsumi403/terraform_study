@@ -2,7 +2,7 @@
 resource "aws_security_group" "my_security_group" {
   name        = "allow_ssh"
   description = "Allow SSH inbound traffic and all outbound traffic"
-  vpc_id      = aws_vpc.my_first_vpc.id
+  vpc_id      = aws_vpc.main.id
 
   ingress {
     from_port   = 22

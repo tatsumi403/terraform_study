@@ -1,20 +1,20 @@
 output "vpc_id" {
-  value       = aws_vpc.my_first_vpc.id
+  value       = aws_vpc.main.id
   description = "VPC ID"
 }
 
-output "subnet_id" {
-  value       = aws_subnet.my_subnet.id
-  description = "サブネットIDの出力"
+output "public_subnet_id" {
+  value       = aws_subnet.public[*].id
+  description = "パブリックサブネットIDの出力"
 }
 
 output "instance_id" {
-  value       = aws_instance.my_instance.id
+  value       = aws_instance.my_instance[*].id
   description = "EC2インスタンスのID"
 }
 
 output "instance_public_ip" {
-  value       = aws_instance.my_instance.public_ip
+  value       = aws_instance.my_instance[*].public_ip
   description = "EC2インスタンスのパブリックIP"
 }
 
