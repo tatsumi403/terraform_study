@@ -4,7 +4,7 @@
 *.tfstate.backup
 
 # Terraform作業ディレクトリ
-.terraform
+.terraform/
 .terraform.lock.hcl
 
 # 機密情報を含む変数ファイル
