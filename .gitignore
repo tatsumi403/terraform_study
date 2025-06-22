@@ -1,0 +1,22 @@
+# Terraform状態ファイル
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Terraform作業ディレクトリ
+.terraform
+.terraform.lock.hcl
+
+# 機密情報を含む変数ファイル
+terraform.tfvars
+*.tfvars
+*.tfvars.json
+
+# 認証情報
+.aws/
+*.pem
+*.key
+
+.DS_Store
+
+*.log
