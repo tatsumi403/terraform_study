@@ -56,3 +56,27 @@ resource "aws_subnet" "private" {
     Environment = var.environment
   }
 }
+
+resource "aws_eip" "elastic_ip" {
+  count = 2
+
+  domain     = "vpc"
+  depends_on = [aws_internet_gateway.main]
+
+  tags = {
+    Name        = "${var.environment}-nat-eip-${count.index + 1}"
+    Environment = var.environment
+  }
+}
+
+resource "aws_nat_gateway" "nat" {
+  count = 2
+
+  allocation_id = aws_eip.elastic_ip[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
+
+  tags = {
+    Name        = "${var.environment}-NAT-Gateway-${count.index + 1}"
+    Environment = var.environment
+  }
+}
