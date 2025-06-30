@@ -101,3 +101,14 @@ resource "aws_route_table_association" "private" {
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private_route_table[count.index].id
 }
+
+resource "aws_lb" "main" {
+  name            = "main-alb"
+  subnets         = [for subnet in aws_subnet.public : subnet.id]
+  security_groups = [aws_security_group.alb.id]
+
+  tags = {
+    Name        = "My Main ALB"
+    Environment = var.environment
+  }
+}
