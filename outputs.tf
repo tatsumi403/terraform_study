@@ -37,3 +37,24 @@ output "account_id" {
   value       = data.aws_caller_identity.current.account_id
   description = "現在のAWSアカウントID"
 }
+
+output "db_instance_endpoint" {
+  value       = aws_db_instance.db.endpoint
+  sensitive   = true
+  description = "RDSのエンドポイント（接続情報）"
+}
+
+output "db_instance_port" {
+  value       = aws_db_instance.db.port
+  description = "データベースのポート番号"
+}
+
+output "db_instance_id" {
+  value       = aws_db_instance.db.id
+  description = "RDSインスタンスのID"
+}
+
+output "db_subnet_group_name" {
+  value       = aws_db_subnet_group.default.name
+  description = "サブネットグループ名"
+}

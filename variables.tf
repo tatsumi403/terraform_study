@@ -47,4 +47,38 @@ variable "private_subnet_cidrs" {
   description = "プライベートサブネットのCIDRブロック"
 }
 
+variable "db_name" {
+  type        = string
+  default     = "myapp"
+  description = "RDSデータベース名"
+}
 
+variable "db_username" {
+  type        = string
+  default     = "admin"
+  description = "RDSユーザー名"
+}
+
+variable "db_password" {
+  type        = string
+  description = "RDSパスワード"
+  sensitive   = true
+}
+
+variable "db_instance_class" {
+  type        = string
+  default     = "db.t3.micro"
+  description = "RDS インスタンスクラス"
+}
+
+variable "db_storage_size" {
+  type        = number
+  default     = 20
+  description = "RDS 割り当てストレージ"
+}
+
+variable "db_storage_max_size" {
+  type        = number
+  default     = 100
+  description = "RDS 最大割り当てストレージ"
+}

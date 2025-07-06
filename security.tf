@@ -86,3 +86,28 @@ resource "aws_security_group" "ec2" {
     Environment = var.environment
   }
 }
+
+resource "aws_security_group" "rds" {
+  name        = "rds_security_group"
+  description = "Allow access from EC2 Security Group"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "Allow access from EC2 Security Group to NAT Gateway"
+    Environment = var.environment
+  }
+}
