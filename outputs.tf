@@ -58,3 +58,18 @@ output "db_subnet_group_name" {
   value       = aws_db_subnet_group.default.name
   description = "サブネットグループ名"
 }
+
+output "ssl_certificate_arn" {
+  value       = aws_acm_certificate.main.arn
+  description = "SSL証明書のARN"
+}
+
+output "ssl_certificate_domain" {
+  value       = aws_acm_certificate.main.domain_name
+  description = "証明書のドメイン名"
+}
+
+output "https_listener_arn" {
+  value       = aws_lb_listener.https.arn
+  description = "HTTPSリスナーのARN"
+}
