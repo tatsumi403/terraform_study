@@ -87,6 +87,38 @@ resource "aws_security_group" "ec2" {
   }
 }
 
+resource "aws_security_group" "asg" {
+  name        = "asg_security_group"
+  description = "Allow web traffic & ssh for Auto Scaling Group"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
+  }
+
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.my_security_group.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "Allow web traffic & ssh for Auto Scaling Group"
+    Environment = var.environment
+  }
+}
+
 resource "aws_security_group" "rds" {
   name        = "rds_security_group"
   description = "Allow access from EC2 Security Group"
