@@ -109,6 +109,7 @@ graph TB
 ### ネットワーク層
 - **VPC**: 10.0.0.0/16 - メインの仮想プライベートクラウド
 - **Internet Gateway**: インターネット接続用ゲートウェイ
+- **Application Load Balancer**: HTTPS/HTTP負荷分散（SSL終端対応）
 - **パブリックサブネット**: 
   - ap-northeast-1a: 10.0.1.0/24
   - ap-northeast-1c: 10.0.2.0/24
@@ -120,14 +121,24 @@ graph TB
 - **マルチAZ構成**: 2つのアベイラビリティゾーンを使用
 - **NAT Gateway**: 各AZに1つずつ配置（計2個）
 - **Elastic IP**: 各NAT Gatewayに1つずつ（計2個）
+- **RDS Multi-AZ**: データベースの高可用性構成
 
 ### コンピュートリソース
-- **EC2インスタンス**: 各サブネットに1つずつ配置（計4個）
-  - パブリックサブネット: 直接インターネットアクセス可能
-  - プライベートサブネット: NAT Gateway経由でアクセス
+- **EC2インスタンス**: パブリックサブネットに配置（計2個）
+  - Application Load Balancerのターゲットとして登録
+  - Auto Scalingグループでの管理対応
+
+### データベース層
+- **RDS MySQL 8.0**: Multi-AZ構成で高可用性
+- **暗号化**: 保存時暗号化対応
+- **自動バックアップ**: 7日間の保持期間
+- **DB サブネットグループ**: プライベートサブネットでの分離配置
 
 ### セキュリティ
-- **セキュリティグループ**: SSH接続（ポート22）を許可
+- **SSL/TLS証明書**: AWS Certificate Manager (ACM) で管理
+- **HTTPS強制**: HTTP→HTTPSリダイレクト設定
+- **セキュリティグループ**: EC2、ALB、RDS用の適切なアクセス制御
+- **データベースセキュリティ**: アプリケーション層からのみアクセス可能
 - **ルートテーブル**: 適切なトラフィック制御
   - パブリック: Internet Gateway経由
   - プライベート: NAT Gateway経由
@@ -138,14 +149,16 @@ graph TB
 terraform_study/
 ├── versions.tf              # Terraformバージョン制約
 ├── providers.tf             # AWSプロバイダー設定
-├── variables.tf             # 変数定義
-├── terraform.tfvars         # 変数値（環境固有）
-├── network.tf              # ネットワークリソース
-├── security.tf             # セキュリティグループ
+├── variables.tf             # 変数定義（データベース変数含む）
+├── terraform.tfvars         # 変数値（環境固有、DB認証情報含む）
+├── network.tf              # ネットワーク、ALB、SSL リスナー
+├── security.tf             # セキュリティグループ（EC2、ALB、RDS、ASG）
 ├── compute.tf              # EC2インスタンス
+├── database.tf             # RDS MySQL（Multi-AZ、暗号化）
+├── ssl.tf                  # ACM SSL証明書と検証
 ├── storage.tf              # S3バケット
 ├── data.tf                 # データソース
-├── outputs.tf              # 出力値
+├── outputs.tf              # 出力値（RDS エンドポイント、SSL ARN含む）
 └── main.tf                 # メインファイル（空）
 ```
 
@@ -186,14 +199,25 @@ terraform destroy
 - `availability_zones`: 使用するAZ
 - `public_subnet_cidrs`: パブリックサブネットCIDR
 - `private_subnet_cidrs`: プライベートサブネットCIDR
+- `bucket_name`: S3バケット名（グローバルユニーク）
+- `db_name`: データベース名
+- `db_username`: データベースユーザー名
+- `db_password`: データベースパスワード（機密情報）
+- `db_instance_class`: RDSインスタンスタイプ
+- `db_storage_size`: 初期ストレージサイズ
+- `db_storage_max_size`: 最大ストレージサイズ（自動スケーリング）
 
 ## 出力値
 
 - VPC ID
-- サブネット ID
+- サブネット ID（パブリック・プライベート）
 - EC2インスタンス ID と パブリックIP
-- S3バケット情報
+- S3バケット情報（名前、ARN、ドメイン名）
 - AWSアカウント ID
+- RDSデータベース情報（エンドポイント、ポート、インスタンスID）
+- DBサブネットグループ名
+- SSL証明書情報（ARN、ドメイン名）
+- HTTPSリスナーARN
 
 ## 特徴
 
@@ -208,9 +232,12 @@ terraform destroy
 - 保守性の高いコード
 
 ### 🔒 セキュリティベストプラクティス
-- プライベートサブネットでアプリケーション保護
-- セキュリティグループによるアクセス制御
+- プライベートサブネットでアプリケーション・データベース保護
+- セキュリティグループによるアクセス制御（EC2、ALB、RDS）
 - NAT Gateway経由の安全な外部通信
+- SSL/TLS証明書による暗号化通信
+- データベース暗号化（保存時・転送時）
+- HTTP→HTTPS強制リダイレクト
 
 ## 学習ポイント
 
@@ -225,16 +252,32 @@ terraform destroy
    - VPC設計とサブネット分割
    - ルーティングとゲートウェイ
    - マルチAZ構成
+   - Application Load Balancerの構成
 
-3. **インフラストラクチャ設計**
+3. **データベース設計**
+   - RDS Multi-AZ構成
+   - データベース暗号化
+   - サブネットグループとセキュリティ
+
+4. **セキュリティ実装**
+   - SSL/TLS証明書管理（ACM）
+   - セキュリティグループ設計
+   - 暗号化とアクセス制御
+
+5. **インフラストラクチャ設計**
    - 高可用性アーキテクチャ
    - セキュリティ考慮事項
    - 運用性とスケーラビリティ
 
 ## 今後の拡張予定
 
-- Application Load Balancer (ALB)
-- Auto Scaling Group
-- RDS Database (Multi-AZ)
-- CloudWatch監視
-- SSL/TLS証明書管理
+- ✅ Application Load Balancer (ALB) - 実装済み
+- Auto Scaling Group - 計画中
+- ✅ RDS Database (Multi-AZ) - 実装済み
+- CloudWatch監視・ログ収集
+- ✅ SSL/TLS証明書管理 - 実装済み
+- WAF (Web Application Firewall)
+- CloudFront CDN
+- ElastiCache (Redis)
+- Lambda関数
+- CI/CD パイプライン
